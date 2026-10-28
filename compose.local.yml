@@ -1,0 +1,50 @@
+name: digipixel-budget-demo-previews
+x-demo: &demo
+  image: nginx:stable-alpine
+  restart: unless-stopped
+  networks:
+    - dev
+  volumes:
+    - ./ops/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+  healthcheck:
+    test: ["CMD","wget","-q","-O","/dev/null","http://127.0.0.1/"]
+    interval: 15s
+    timeout: 4s
+    retries: 3
+services:
+  alder:
+    <<: *demo
+    container_name: digipixel-demo-alder
+    volumes:
+      - ./public/alder:/usr/share/nginx/html:ro
+      - ./ops/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports: ["127.0.0.1:8771:80"]
+    labels:
+      caddy: "alder.demo.digipixel.test"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+      caddy.tls: "internal"
+  fieldnote:
+    <<: *demo
+    container_name: digipixel-demo-fieldnote
+    volumes:
+      - ./public/fieldnote:/usr/share/nginx/html:ro
+      - ./ops/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports: ["127.0.0.1:8772:80"]
+    labels:
+      caddy: "fieldnote.demo.digipixel.test"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+      caddy.tls: "internal"
+  sunday:
+    <<: *demo
+    container_name: digipixel-demo-sunday
+    volumes:
+      - ./public/sunday:/usr/share/nginx/html:ro
+      - ./ops/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports: ["127.0.0.1:8773:80"]
+    labels:
+      caddy: "sunday.demo.digipixel.test"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+      caddy.tls: "internal"
+networks:
+  dev:
+    external: true

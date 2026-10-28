@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+.pytest_cache/
+.env
+.env.*
+!.env.example
+screenshots/
+node_modules/
+playwright-report/
+test-results/

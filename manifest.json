@@ -1,0 +1,18 @@
+{
+  "brand": "DigiPixel",
+  "type": "fictional budget WordPress-ready demo design concepts",
+  "sites": {
+    "alder": {
+      "name": "Alder & Stone",
+      "sector": "Trades & home improvements"
+    },
+    "fieldnote": {
+      "name": "Fieldnote",
+      "sector": "Accountancy & professional services"
+    },
+    "sunday": {
+      "name": "Sunday & Sage",
+      "sector": "Beauty, wellness & appointments"
+    }
+  }
+}
