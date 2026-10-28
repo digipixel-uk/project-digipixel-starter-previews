@@ -12,6 +12,8 @@ const path = require('node:path');
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    const base='http://127.0.0.1:'+port;
    await page.goto(base+'/',{waitUntil:'networkidle'});
+   await page.evaluate(async()=>{ for(let y=0;y<document.body.scrollHeight;y+=650){window.scrollTo(0,y);await new Promise(resolve=>setTimeout(resolve,35));} window.scrollTo(0,0);});
+   await page.waitForTimeout(300);
    const headline=await page.locator('h1').innerText();
    await page.locator('img').evaluateAll(imgs=>imgs.forEach(im=>im.loading='eager'));
    await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete&&i.naturalWidth>0),null,{timeout:15000});

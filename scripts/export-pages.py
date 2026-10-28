@@ -5,7 +5,7 @@ import shutil
 import html
 ROOT=Path(__file__).resolve().parents[1]
 SRC=ROOT/"public"
-DST=ROOT/"pages"
+DST=ROOT/"docs"
 BASE="/project-digipixel-starter-previews"
 if DST.exists():
  shutil.rmtree(DST)
