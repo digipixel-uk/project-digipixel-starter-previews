@@ -27,7 +27,16 @@ Caddy on the shared local dev network also maps alder.demo.digipixel.test, field
 
 ## Preview publishing
 
-The public/<site> directories are release-ready static review assets. Any permanent public preview deployment should use the existing dedicated preview node and domain namespace under *.preview.digipixel.uk, with valid TLS, noindex and optional access controls. Do not silently route this through production or replace existing customer previews. The static review assets are distinct from the planned native WordPress implementation for paying DigiPixel clients.
+The public/<site> directories are release-ready static review assets. To give the user durable public previews while leaving existing customer previews and production infrastructure untouched, the demos were published through a separate GitHub Pages repository (digipixel-uk/digipixel-budget-previews):
+
+- https://digipixel-uk.github.io/digipixel-budget-previews/ — overview
+- https://digipixel-uk.github.io/digipixel-budget-previews/alder/
+- https://digipixel-uk.github.io/digipixel-budget-previews/fieldnote/
+- https://digipixel-uk.github.io/digipixel-budget-previews/sunday/
+
+Publication is separate from production, explicitly noindex, and contains only fictitious demo content. The permanent dedicated preview node (*.preview.digipixel.uk) remains the preferred future branded preview service when available.
+
+To update and republish after editing source: run python3 build.py and python3 prepare_github_pages.py, review the generated .publish-gh-pages diff, then commit and push in .publish-gh-pages. The exporter retains the deployment repository's .git directory. The native WordPress implementation for paying customers is a later step after design approval.
 
 ## Images / licence
 

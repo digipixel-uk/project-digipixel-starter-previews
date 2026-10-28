@@ -1,10 +1,9 @@
-.DS_Store
+# Separate public hosting Git repository and generated review artifacts
+.publish-gh-pages/
+tests/screenshots/
 __pycache__/
-.pytest_cache/
+.DS_Store
+*.pyc
+.local/
 .env
 .env.*
-!.env.example
-screenshots/
-node_modules/
-playwright-report/
-test-results/
