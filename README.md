@@ -36,3 +36,15 @@ Images are downloaded at build time from Unsplash and stored locally. The photo 
 ## Delivery boundary
 
 These designs are preview concepts. The proposed DigiPixel delivery stack for customer websites is native WordPress with a custom theme, editable content, backups, SEO and a real contact endpoint. Conversion of the approved concepts into WordPress production packages should not be confused with these static demonstrations. No production domains or servers are touched by the local run command.
+
+## Hosted sales previews (28 October 2026)
+
+Live gallery: https://digipixel-uk.github.io/project-digipixel-starter-previews/
+
+- https://digipixel-uk.github.io/project-digipixel-starter-previews/alder/
+- https://digipixel-uk.github.io/project-digipixel-starter-previews/fieldnote/
+- https://digipixel-uk.github.io/project-digipixel-starter-previews/sunday/
+
+GitHub Pages is configured to publish the main branch's /docs folder. Rebuild it with python3 scripts/export-pages.py after changing design content, commit and push. The hosted gallery, all demo pages, assets, mobile menus and non-sending forms have been verified through HTTPS and a headless mobile Chromium test.
+
+GitHub Pages is an interim, non-production review host only. The normal controlled preview.digipixel.uk environment was not changed because the known SSH host identity of its apparent wildcard target differed from the stored identity. Resolve that out-of-band against the infrastructure provider before provisioning there; do not disable SSH host key checking.
