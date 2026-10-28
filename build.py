@@ -1,315 +1,295 @@
 #!/usr/bin/env python3
-"""Build three isolated DigiPixel budget website concept previews.
-Illustrative businesses only; no lead collection or false reviews.
+"""Three genuinely separate, responsive DigiPixel starter design systems.
+
+These sites demonstrate different visual design directions, not different skins.
+They intentionally do not collect visitor data. Each demonstration business is fictional.
 """
 from pathlib import Path
-from html import escape as e
-from urllib.request import urlopen, Request
-import json
-import os
+from html import escape as esc
+from content_reference import DATA, photo_download
+import shutil
 
-ROOT = Path(__file__).resolve().parent
-OUT = ROOT / "public"
-PHOTO_BASE = "https://images.unsplash.com/"
-DATA = {
- "alder": {
-  "name":"Alder & Stone", "strap":"Home renovations", "sector":"Trades & home improvements",
-  "place":"Wiltshire", "kicker":"Thoughtful renovation. Beautifully finished.",
-  "headline":"A better home starts with good people.",
-  "intro":"Kitchens, bathrooms and the finishing touches that turn everyday spaces into somewhere you love to be.",
-  "micro":"Made for real homes", "proof":["Kitchens designed around you","Bathrooms built to last","A straightforward process"],
-  "hero":"photo-1600585154340-be6161a56a0c",
-  "images":["photo-1600566753086-00f18fb6b3ea","photo-1600607687920-4e2a09cf159d","photo-1600566752355-35792bedcfea","photo-1600585152915-d208bec867a1"],
-  "section_kicker":"What we can do", "section_head":"The details make the difference.",
-  "section_intro":"Big renovation or small upgrade, every job starts with listening and ends with the finishing touches.",
-  "services":[
-   ("Kitchen renovations","A kitchen that works beautifully from the first coffee to the last plate away.","Layout planning, fitting and finishing"),
-   ("Bathrooms & wet rooms","Calm, practical spaces with thoughtful storage and timeless finishes.","Refits, tiling and fixtures"),
-   ("Home improvements","Refresh a room, rethink a layout or finish those jobs you've been putting off.","Joinery, flooring and decorating")
-  ],
-  "promise":"Good workmanship. Clear conversations. No unnecessary fuss.",
-  "about":"Alder & Stone is a fictional example of a local home improvement business. This concept demonstrates how DigiPixel could give an independent tradesperson a professional online presence without the complexity or cost of a bespoke software project.",
-  "values":[("Talk it through","Tell us the result you're looking for and we'll explore the options."),("Plan the work","We'll explain the scope, practicalities and next steps in plain English."),("Make it happen","Care and attention at every stage, from preparation to the final detail.")],
-  "faq":[("Can you help with a smaller project?","Absolutely. This demonstration shows how a trades website can welcome both small improvements and full room renovations."),("Where do you work?","The example business is presented as serving Wiltshire and nearby areas. Exact coverage would be set by the real customer."),("How do I get a quote?","This is a design preview. The enquiry form demonstrates the journey but does not submit any details.")],
-  "cta":"Let's talk about your space.", "cta_body":"Tell us a little about your plans and see how simple the next step could be.",
-  "form_subject":"What are you planning?", "form_options":["Kitchen renovation","Bathroom renovation","Home improvement","Something else"],
-  "hero_note":"Beautifully considered spaces, built around everyday life.",
- },
- "fieldnote": {
-  "name":"Fieldnote", "strap":"Bookkeeping studio", "sector":"Accountancy & professional services",
-  "place":"Small businesses, everywhere", "kicker":"Less paperwork. More headspace.",
-  "headline":"Your numbers, finally making sense.",
-  "intro":"Clear, considered bookkeeping support for people who would rather be running their business than sorting receipts.",
-  "micro":"Bookkeeping, minus the overwhelm", "proof":["Stay on top of the day to day","Make confident decisions","Keep things moving"],
-  "hero":"photo-1497366754035-f200968a6e72",
-  "images":["photo-1556761175-b413da4baf72","photo-1497366811353-6870744d04b2","photo-1551836022-d5d88e9218df","photo-1554224155-6726b3ff858f"],
-  "section_kicker":"What we take care of", "section_head":"The right support changes everything.",
-  "section_intro":"Not another spreadsheet to worry about. Just the right information, organised and explained.",
-  "services":[
-   ("Everyday bookkeeping","Keep income, expenses and records neat, up to date and ready when you need them.","Transaction recording and reconciliation"),
-   ("Invoices & expenses","Make it easier to stay organised with clearer processes and fewer loose ends.","Invoice and expense workflows"),
-   ("Reports that help","Understand what's happening in your business without having to decode a pile of numbers.","Useful monthly management insights")
-  ],
-  "promise":"Clear records. Friendly support. More time for what matters.",
-  "about":"Fieldnote is an illustrative bookkeeping brand, created to demonstrate an affordable, conversion-focused DigiPixel website for a small professional practice. Its services, imagery and copy are examples, not claims about a trading firm or regulated provider.",
-  "values":[("Say hello","Start with a friendly conversation about your business and what's taking your time."),("Find your rhythm","Choose a way of working that suits your business rather than the other way around."),("See things clearly","Keep everything organised and know what needs your attention next.")],
-  "faq":[("Is this a real bookkeeping firm?","No. Fieldnote is a DigiPixel website design demonstration."),("Would this design work for an accountant?","Yes. It shows a suitable starting point for accountants, bookkeepers, consultants and other professional services."),("Can I book a call here?","The sample enquiry form demonstrates how a lead journey would work. No information is transmitted.")],
-  "cta":"Business feels better with clarity.", "cta_body":"A welcoming first conversation is all it takes to get started.",
-  "form_subject":"What do you need a hand with?", "form_options":["Monthly bookkeeping","Invoices and expenses","Management reports","Not sure yet"],
-  "hero_note":"Finally, a little room to focus on your business.",
- },
- "sunday": {
-  "name":"Sunday & Sage", "strap":"Hair studio", "sector":"Beauty, wellness & appointments",
-  "place":"Your neighbourhood studio", "kicker":"A little time, just for you.",
-  "headline":"Good hair. Better feeling.",
-  "intro":"Considered cuts, effortless colour and the kind of appointment you look forward to all week.",
-  "micro":"Your hair, your way", "proof":["Cuts with personality","Colour with care","Time to unwind"],
-  "hero":"photo-1560066984-138dadb4c035",
-  "images":["photo-1521590832167-7bcbfaa6381f","photo-1605497788044-5a32c7078486","photo-1487412947147-5cebf100ffc2","photo-1633681926035-ec1ac984418a"],
-  "section_kicker":"The treatment menu", "section_head":"Come as you are. Leave feeling lovely.",
-  "section_intro":"No complicated menus. Just great hair, good conversations and a little room to breathe.",
-  "services":[
-   ("Cut & finish","Shape, movement and style that feels completely like you.","Consultation, cut and styled finish"),
-   ("Colour & care","From soft, lived-in tones to something completely new.","Colour planning and finish"),
-   ("A fresh start","A little reset before something special, or simply because you deserve it.","Treatments and occasion styling")
-  ],
-  "promise":"A considered moment, in the middle of a busy week.",
-  "about":"Sunday & Sage is a fictitious beauty studio designed as a DigiPixel preview. It demonstrates the warm visual language, service menus and appointment-led journey that an independent salon can have with a straightforward, affordable website.",
-  "values":[("Find your thing","Explore the menu and choose the service that feels right."),("Make time","Pick a time to pause and get a little attention for yourself."),("Leave glowing","An experience with care in every detail, from hello to goodbye.")],
-  "faq":[("Can I book an appointment?","Not through this demonstration. The booking experience is illustrative and no appointment is created."),("Are the service prices real?","No. This site uses sample copy and does not present real prices or offers."),("Can a salon connect an existing booking app?","Yes. A finished DigiPixel site can point to an approved booking provider without building a custom booking system.")],
-  "cta":"Your next good hair day starts here.", "cta_body":"A calm, simple booking journey is one of the best things a salon website can offer.",
-  "form_subject":"What can we help with?", "form_options":["Cut and finish","Colour consultation","Special occasion","Something else"],
-  "hero_note":"A little room to breathe. A lovely way to feel.",
- },
-}
+ROOT=Path(__file__).resolve().parent
+PUBLIC=ROOT/"public"
+PAGES=["home","services","about","contact"]
+NAV_LABELS={"home":"Home","services":"Services","about":"About","contact":"Contact"}
 
-def image_url(photo, w=1150):
- return f"{PHOTO_BASE}{photo}?w={w}&q=78&fit=crop&auto=format"
+def link(page):
+ return "/" if page=="home" else "/"+page+"/"
 
-def photo_download(slug, i, photo):
- folder = OUT / slug / "assets"
- folder.mkdir(parents=True, exist_ok=True)
- dest = folder / ("hero.jpg" if i == 0 else f"photo-{i}.jpg")
- if dest.exists() and dest.stat().st_size > 15000: return
- request = Request(image_url(photo, 1600 if i == 0 else 1000), headers={"User-Agent":"Mozilla/5.0"})
- try:
-  with urlopen(request, timeout=30) as res:
-   body = res.read()
-   content_type = res.headers.get("Content-Type","")
-  if not content_type.startswith("image/") or len(body) < 15000:
-   raise RuntimeError(f"unexpected image payload {content_type} {len(body)}")
-  dest.write_bytes(body)
-  print("photo:", slug, dest.name, len(body))
- except Exception as exc:
-  print("PHOTO FAILED", slug, photo, exc)
-  if not dest.exists(): raise
+def pic(file, alt, extra=""):
+ return '<img src="/assets/'+file+'" alt="'+esc(alt)+'" loading="lazy" '+extra+'>'
 
-def url(page):
- return "/" if page=="home" else f"/{page}/"
+def action(text, href="/contact/", cls="btn"):
+ return '<a class="'+cls+'" href="'+href+'">'+esc(text)+'</a>'
 
-def nav(d, slug, page):
- links = [("home","Home"),("services","Services"),("about","Our approach"),("contact","Contact")]
- items = "".join(f'<a href="{url(p)}" class="nav-link{" active" if p == page else ""}" {"aria-current=page" if p==page else ""}>{label}</a>' for p,label in links)
- return f"""
- <div class="demo-bar"><span><strong>DEMO WEBSITE</strong> / DigiPixel design concept for {e(d['sector'])}</span>
-   <a href="https://digipixel.uk/" target="_blank" rel="noopener noreferrer">Need a website like this? <span aria-hidden="true">↗</span></a></div>
- <header class="header" id="top"><div class="nav-shell">
-   <a class="wordmark" href="/" aria-label="{e(d['name'])} home">
-     <span class="mark" aria-hidden="true">{'a' if slug=='alder' else 'f' if slug=='fieldnote' else 's'}</span>
-     <span class="logo-copy"><span class="brand">{e(d['name'])}</span><span class="descriptor">{e(d['strap'])}</span></span>
-   </a>
-   <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
-     <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span><span>Menu</span>
-   </button>
-   <nav class="nav" id="site-navigation" aria-label="Primary navigation">{items}
-     <a class="nav-cta" href="/contact/">{'Book a visit' if slug=='alder' else 'Start a conversation' if slug=='fieldnote' else 'Get in touch'} <span aria-hidden="true">↗</span></a></nav>
+def menu(slug, page):
+ labels={
+  "alder":{"home":"Home","services":"What we do","about":"Our approach","contact":"Get a quote"},
+  "fieldnote":{"home":"Home","services":"How we help","about":"The studio","contact":"Let's talk"},
+  "sunday":{"home":"Home","services":"The menu","about":"Our world","contact":"Get in touch"}
+ }[slug]
+ return "".join('<a class="nav-link'+(" is-current" if p==page else "")+'" href="'+link(p)+'"'+(' aria-current="page"' if p==page else "")+'>'+labels[p]+'</a>' for p in PAGES)
+
+def nav(slug, page):
+ links=menu(slug,page)
+ if slug=="alder":
+  return """
+ <div class="site-strip"><span>Independent home renovations in Wiltshire</span><span>DigiPixel website design demonstration</span></div>
+ <header class="trade-header"><div class="frame trade-nav">
+   <a class="trade-logo" href="/" aria-label="Alder and Stone home">ALDER <span>&</span> STONE<span class="logo-line">HOME RENOVATIONS</span></a>
+   <button class="menu-toggle" aria-expanded="false" aria-controls="main-navigation" type="button"><span class="menu-toggle-lines"><i></i><i></i><i></i></span>Menu</button>
+   <nav class="nav" id="main-navigation" aria-label="Main navigation">"""+links+"""<a class="nav-button" href="/contact/">REQUEST A QUOTE</a></nav>
+ </div></header>"""
+ if slug=="fieldnote":
+  return """
+ <header class="field-header"><div class="field-wrap field-nav">
+  <a class="field-logo" href="/" aria-label="Fieldnote home">fieldnote<span class="field-dot">.</span><small>THE BOOKKEEPING STUDIO</small></a>
+  <button class="menu-toggle" type="button" aria-controls="main-navigation" aria-expanded="false">Menu <span class="menu-toggle-lines"><i></i><i></i><i></i></span></button>
+  <nav class="nav" id="main-navigation" aria-label="Main navigation">"""+links+"""<a class="nav-button" href="/contact/">Start a conversation</a></nav>
+ </div></header>"""
+ return """
+ <div class="salon-note"><span>Sunday & Sage / Independent hair studio</span><span>A DigiPixel design demonstration</span></div>
+ <header class="salon-header"><div class="salon-wrap salon-nav">
+  <a class="salon-logo" href="/" aria-label="Sunday and Sage home">sunday <em>&</em> sage</a>
+  <button class="menu-toggle" aria-expanded="false" aria-controls="main-navigation" type="button">Menu <span class="menu-toggle-lines"><i></i><i></i><i></i></span></button>
+  <nav class="nav" id="main-navigation" aria-label="Main navigation">"""+links+"""<a class="nav-button" href="/contact/">Ask about a visit</a></nav>
  </div></header>"""
 
-def footer(d):
- return f"""
- <footer class="footer">
-  <div class="footer-grid container">
-   <div><div class="footer-logo">{e(d['name'])}<span>.</span></div><p>{e(d['hero_note'])}</p></div>
-   <div><p class="footer-heading">Explore</p><a href="/">Home</a><a href="/services/">Services</a><a href="/about/">Our approach</a><a href="/contact/">Contact</a></div>
-   <div><p class="footer-heading">Say hello</p><p>{e(d['place'])}</p><a href="/contact/">Contact the studio <span aria-hidden="true">↗</span></a></div>
-  </div>
-  <div class="footer-bottom container"><span>Illustrative brand and content. No real business or booking service.</span><span>A <a href="https://digipixel.uk/" target="_blank" rel="noopener">DigiPixel</a> website concept</span></div>
- </footer>"""
-
-def shell(d, slug, page, main):
- seo={"home":d["headline"],"services":"Services","about":"Our approach","contact":"Get in touch"}
- title=f"{seo[page]} | {d['name']}"
- desc=(d["intro"] if page=="home" else f"Discover the {d['name']} website concept for {d['sector']}.")[:158]
- return f"""<!doctype html>
-<html lang="en-GB"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="theme-color" content="{'#202f28' if slug=='alder' else '#183d42' if slug=='fieldnote' else '#492d3c'}">
-<meta name="description" content="{e(desc)}"><title>{e(title)}</title>
-<meta property="og:type" content="website"><meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/site.css">
-<script defer src="/assets/site.js"></script></head>
-<body class="site site--{slug} page--{page}">
-<a class="skip-link" href="#main">Skip to main content</a>
-{nav(d,slug,page)}
-<main id="main">{main}</main>{footer(d)}
-</body></html>"""
-
-def btn(label, href="/contact/", cls="button button-primary"):
- return f'<a class="{cls}" href="{href}">{e(label)} <span aria-hidden="true">↗</span></a>'
-
-def eyebrow(txt):
- return f'<span class="eyebrow"><span class="eyebrow-dot"></span>{e(txt)}</span>'
-
-def hero(d,slug):
+def footer(slug):
  if slug=="alder":
-  return f"""<section class="hero hero-alder">
-  <div class="container hero-alder-grid">
-    <div class="hero-copy">{eyebrow(d['kicker'])}
-      <h1>A better home starts with <em>good people.</em></h1>
-      <p class="lead">{e(d['intro'])}</p>
-      <div class="action-row">{btn("Talk about your project")}{btn("Explore our work","/services/","button button-outline")}</div>
-      <div class="hero-trust"><span class="sun-icon" aria-hidden="true">✳</span> A simpler way to improve your home</div>
-    </div>
-    <div class="hero-visual"><img src="/assets/hero.jpg" alt="Modern characterful home exterior with considered architectural finishes" fetchpriority="high">
-     <div class="visual-card"><span class="visual-num">01 / 03</span><strong>Space to feel at home.</strong><p>Made for the way you really live.</p></div></div>
-  </div></section>"""
+  return """<footer class="trade-footer">
+  <div class="frame trade-footer-grid"><div><a href="/" class="footer-brand">ALDER & STONE</a><p>Better spaces. Straight answers.<br>Wiltshire home renovation concept.</p></div>
+   <div><strong>Explore</strong><a href="/services/">Services</a><a href="/about/">About</a><a href="/contact/">Get a quote</a></div>
+   <div><strong>Next step</strong><p>Got a project in mind?</p><a href="/contact/" class="footer-contact">START YOUR ENQUIRY</a></div></div>
+  <div class="frame footer-legal">Fictional business. Photos are illustrative, not evidence of completed projects. No enquiries are collected. <a href="https://digipixel.uk/">A DigiPixel website demonstration.</a></div></footer>"""
  if slug=="fieldnote":
-  return f"""<section class="hero hero-fieldnote">
-  <div class="container fieldnote-grid">
-   <div class="hero-copy">{eyebrow(d["kicker"])}
-     <h1>Your numbers,<br><span class="highlight-swoop">finally</span> making sense<span class="period">.</span></h1>
-     <p class="lead">{e(d['intro'])}</p>
-     <div class="action-row">{btn("Let's get clear")}{btn("See how we help","/services/","button button-outline")}</div>
-     <div class="quiet-note"><span aria-hidden="true">✳</span> Friendly support for the way you work.</div>
-   </div>
-   <div class="fieldnote-photo"><img src="/assets/hero.jpg" alt="Bright welcoming work space with desks and natural light" fetchpriority="high">
-    <div class="fieldnote-sticker"><span aria-hidden="true">✦</span><strong>Make space<br>for better.</strong></div></div>
-  </div></section>"""
- return f"""<section class="hero hero-sunday">
-  <div class="sunday-photo"><img src="/assets/hero.jpg" alt="Bright salon interior with chairs and styling stations" fetchpriority="high"></div>
-  <div class="sunday-scrim"></div><div class="container sunday-inner">
-   <div class="hero-copy">{eyebrow(d["kicker"])}<h1>Good hair.<br><em>Better feeling.</em></h1>
-    <p class="lead">{e(d["intro"])}</p>
-    <div class="action-row">{btn("Explore the menu","/services/")}{btn("Come say hello","/contact/","button button-light")}</div>
-   </div>
-   <span class="sunday-vertical">A place to be yourself · Your neighbourhood studio</span>
-  </div>
- </section>"""
+  return """<footer class="field-footer"><div class="field-wrap"><div class="field-footer-top">
+   <a href="/" class="field-footer-word">fieldnote.</a><div class="field-footer-links"><a href="/services/">Services</a><a href="/about/">Our story</a><a href="/contact/">Get in touch</a></div></div>
+  <div class="field-footer-low"><p>A little less admin. A lot more clarity.</p><p>Fictional business; design preview only. No information is sent. Website by <a href="https://digipixel.uk/">DigiPixel</a>.</p></div></div></footer>"""
+ return """<footer class="salon-footer"><div class="salon-wrap">
+  <div class="salon-footer-top"><div class="salon-footer-brand">sunday <em>&</em> sage</div><div><p>A little time for yourself.</p><a href="/contact/">Get in touch</a></div></div>
+  <nav class="salon-footer-nav" aria-label="Footer navigation"><a href="/">Home</a><a href="/services/">The menu</a><a href="/about/">Our world</a><a href="/contact/">Contact</a></nav>
+  <div class="salon-footer-legal">Imaginary salon and imagery for a DigiPixel design demonstration. No appointments or enquiries are collected. <a href="https://digipixel.uk/">Made for DigiPixel</a>.</div>
+ </div></footer>"""
 
-def intro_strip(d, slug):
- return '<div class="intro-strip"><div class="container strip-items">'+''.join(
-  f'<div><span class="strip-icon" aria-hidden="true">{["✳","◌","↗"][i]}</span><span>{e(text)}</span></div>' for i,text in enumerate(d["proof"])
- )+'</div></div>'
+def document(slug, page, body):
+ d=DATA[slug]
+ titles={"home":d["name"]+" | "+d["strap"],"services":"Services | "+d["name"],"about":"About | "+d["name"],"contact":"Contact | "+d["name"]}
+ descriptions={"home":d["intro"],"services":d["section_intro"],"about":d["promise"],"contact":d["cta_body"]}
+ palette={"alder":"#191e1c","fieldnote":"#f8f9f5","sunday":"#f7e5ed"}
+ return """<!doctype html><html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content='"""+palette[slug]+"""'>
+<meta name="description" content='"""+esc(descriptions[page],quote=True)+"""'>
+<meta property="og:title" content='"""+esc(titles[page],quote=True)+"""'>
+<title>"""+esc(titles[page])+"""</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css"><script src="/assets/site.js" defer></script></head>
+<body class='concept concept-"""+slug+" page-"+page+"""'>
+<a class="skip-link" href="#main">Skip to content</a>
+"""+nav(slug,page)+"""
+<main id="main">"""+body+"</main>"+footer(slug)+"""</body></html>"""
 
-def section_services(d,slug):
- cards=''.join(f"""<article class="service-card">
-    <div class="card-index">0{i+1} <span aria-hidden="true">↗</span></div>
-    <h3>{e(title)}</h3><p>{e(desc)}</p><span class="service-detail">{e(detail)}</span>
-    </article>""" for i,(title,desc,detail) in enumerate(d["services"]))
- return f"""<section class="section services-section" id="services"><div class="container">
-  <div class="section-head"><div>{eyebrow(d["section_kicker"])}<h2>{e(d["section_head"])}</h2></div><div><p>{e(d["section_intro"])}</p><a class="text-link" href="/services/">Explore our services <span aria-hidden="true">↗</span></a></div></div>
-  <div class="services-grid">{cards}</div>
- </div></section>"""
+def banner_trade(kicker, headline, sub):
+ return '<section class="trade-page-title"><div class="frame"><span class="trade-eyebrow">'+kicker+'</span><h1>'+headline+'</h1><p>'+esc(sub)+'</p></div></section>'
 
-def editorial(d, slug):
- if slug=="alder":
-  head="Your home deserves more than a quick fix."
-  body="Good design should work in everyday life, not just look good in photographs. We bring care, practical thinking and attention to the jobs that matter."
-  img1="Carefully designed warm-toned home interior"
- elif slug=="fieldnote":
-  head="A bit more clarity. A lot less noise."
-  body="We're here for the behind-the-scenes work that keeps things running. Thoughtful processes, approachable people and the feeling that someone's got it covered."
-  img1="People collaborating around a table at work"
- else:
-  head="You look after everyone. Now it's your turn."
-  body="More than a trim, it's your chance to unwind. This is a space made for good conversation, thoughtful care and feeling like yourself again."
-  img1="Hair styling in progress in a bright studio"
- return f"""<section class="section editorial-section">
-  <div class="container editorial-grid">
-   <div class="editorial-images"><img src="/assets/photo-1.jpg" loading="lazy" alt="{e(img1)}"><div class="editorial-small"><img src="/assets/photo-2.jpg" loading="lazy" alt="Additional example of this industry and working environment"></div></div>
-   <div class="editorial-copy">{eyebrow("A little about us")}<h2>{e(head)}</h2><p>{e(body)}</p>
-    <div class="editorial-note"><span aria-hidden="true">✳</span><span>{e(d["promise"])}</span></div>
-    {btn("Get to know us","/about/","button button-outline")}</div>
-  </div></section>"""
+def home_trade():
+ return """
+<section class="trade-hero">
+ <div class="trade-hero-picture">"""+pic("hero.jpg","Contemporary home with architectural timber and warm evening lighting", 'fetchpriority="high"')+"""</div>
+ <div class="trade-hero-screen"></div>
+ <div class="frame trade-hero-content"><div class="trade-hero-text"><span class="trade-eyebrow">WILTSHIRE HOME IMPROVEMENTS</span>
+  <h1>GOOD WORK.<br><span>NO DRAMA.</span></h1>
+  <p>Properly planned kitchens, bathrooms and home improvements. Clear conversations, considered finishes, and a home that works harder for you.</p>
+  <div class="trade-actions">"""+action("TELL US YOUR PLANS")+action("SEE WHAT WE DO","/services/","text-action")+"""</div>
+ </div><div class="trade-hero-index"><span>INDEPENDENT THINKING</span><strong>BUILT AROUND YOU</strong></div></div>
+</section>
+<div class="trade-tape"><div class="frame"><span>CONSIDERED DESIGN</span><span>STRAIGHTFORWARD PROCESS</span><span>EVERYDAY PRACTICALITY</span></div></div>
+<section class="trade-what section-space"><div class="frame trade-what-grid">
+ <div><span class="trade-eyebrow orange">01 / OUR WORK</span><h2>YOUR SPACE.<br>DONE RIGHT.</h2><p>Whether you're rethinking an entire room or finishing a long-overdue job, we'd start with a proper conversation.</p>"""+action("ALL SERVICES","/services/","text-action dark")+"""</div>
+ <div class="trade-service-list">
+  <a href="/services/"><span class="service-number">01</span><strong>KITCHENS</strong><span>Fitting & finishing</span></a>
+  <a href="/services/"><span class="service-number">02</span><strong>BATHROOMS</strong><span>Refits & wet rooms</span></a>
+  <a href="/services/"><span class="service-number">03</span><strong>IMPROVEMENTS</strong><span>Joinery & decorating</span></a>
+ </div>
+</div></section>
+<section class="trade-photos"><div class="frame"><div class="trade-photos-title"><span class="trade-eyebrow">DESIGN INSPIRATION</span><p>Example imagery to show how a trades business could present its work. Not photographs of real Alder & Stone projects.</p></div>
+ <div class="trade-photo-grid"><figure>"""+pic("photo-1.jpg","Warm open-plan home interior")+"""<figcaption>BETTER SPACES</figcaption></figure><figure>"""+pic("photo-3.jpg","Modern kitchen design and interior details")+"""<figcaption>THE FINISHING TOUCHES</figcaption></figure></div></div>
+</section>
+<section class="trade-process section-space"><div class="frame"><div class="trade-process-intro"><span class="trade-eyebrow orange">02 / HOW WE WORK</span><h2>THREE SIMPLE STEPS.</h2></div>
+ <ol class="trade-steps"><li><b>01</b><strong>HAVE A CHAT.</strong><p>Tell us what you're planning and what matters most.</p></li><li><b>02</b><strong>GET A PLAN.</strong><p>A clear understanding of the scope and next steps.</p></li><li><b>03</b><strong>MAKE IT HAPPEN.</strong><p>Careful work with attention to the detail.</p></li></ol></div>
+</section>"""+trade_cta()
 
-def steps(d):
- blocks=''.join(f"""<div class="step"><span class="step-num">0{i+1}</span><h3>{e(title)}</h3><p>{e(copy)}</p></div>""" for i,(title,copy) in enumerate(d["values"]))
- return f"""<section class="section steps-section"><div class="container">
-   <div class="section-head"><div>{eyebrow("The simple process")}<h2>Easy from the first hello.</h2></div><p>No mystery. No long forms to navigate. Just a clear path from here to there.</p></div>
-   <div class="step-grid">{blocks}</div></div></section>"""
+def trade_cta():
+ return """<section class="trade-cta"><div class="frame trade-cta-grid"><div><span class="trade-eyebrow">YOUR PROJECT STARTS HERE</span><h2>LET'S GET<br>TO WORK.</h2></div><div><p>Tell us what you're imagining. A good conversation comes first.</p>"""+action("REQUEST A QUOTE")+"</div></div></section>"
 
-def cta(d):
- return f"""<section class="cta-section"><div class="container cta-grid"><div>{eyebrow("Let's begin")}<h2>{e(d["cta"])}</h2><p>{e(d["cta_body"])}</p></div>{btn("Get in touch","/contact/","button button-light")}</div></section>"""
+def services_trade():
+ d=DATA["alder"]
+ x=banner_trade("WHAT WE DO","BUILT FOR<br>REAL LIFE.","A clear, practical range of home improvement services.")
+ for idx,(title,desc,detail) in enumerate(d["services"],1):
+  image="photo-"+str(idx)+".jpg"
+  x+='<section class="trade-service-feature"><div class="frame trade-feature-grid"><div class="feature-image">'+pic(image,"Example image of "+title.lower())+'</div><div class="feature-body"><span class="trade-eyebrow orange">SERVICE '+str(idx).zfill(2)+'</span><h2>'+esc(title.upper())+'</h2><p>'+esc(desc)+'</p><div class="feature-detail">'+esc(detail)+'</div>'+action("ASK ABOUT THIS SERVICE")+'</div></div></section>'
+ return x+trade_cta()
 
-def home(d,slug):
- return hero(d,slug)+intro_strip(d,slug)+section_services(d,slug)+editorial(d,slug)+steps(d)+cta(d)
+def about_trade():
+ return banner_trade("OUR APPROACH","THE DETAILS<br>MATTER.","A simple, careful approach for your home.")+"""
+ <section class="trade-about section-space"><div class="frame trade-about-grid"><div><span class="trade-eyebrow orange">MORE THAN A QUICK FIX</span><h2>GOOD PEOPLE.<br>GOOD PROCESS.<br>GOOD FINISH.</h2><p>On a real trades website, this is the place for the owner's story, their approach to projects and genuine photographs of the team at work.</p><p>This example explains how DigiPixel can show a local builder's expertise without overcomplicating the website.</p>"""+action("TALK ABOUT YOUR PROJECT")+"""</div><div class="trade-about-picture">"""+pic("photo-2.jpg","Contemporary home interior showing detailed finishes")+"""</div></div></section>
+ <section class="trade-principle"><div class="frame"><h2>LESS SALES TALK.<br>MORE STRAIGHT ANSWERS.</h2><p>Practical advice, straightforward expectations and work you'd be pleased to come home to.</p></div></section>"""+trade_cta()
 
-def page_banner(d,title,lead,kicker):
- return f"""<section class="page-banner"><div class="container">{eyebrow(kicker)}<h1>{e(title)}</h1><p>{e(lead)}</p></div></section>"""
+def form_markup(slug):
+ d=DATA[slug]
+ options=''.join('<option value="'+esc(x,quote=True)+'">'+esc(x)+'</option>' for x in d["form_options"])
+ return """
+<form class="form" data-demo-form novalidate>
+ <div class="form-fields">
+  <label for="full-name">Your name<input type="text" name="name" id="full-name" autocomplete="name" placeholder="Your name" maxlength="100" required></label>
+  <label for="email-address">Email address<input type="email" name="email" id="email-address" autocomplete="email" placeholder="you@example.com" maxlength="254" required></label>
+  <label for="type-of-enquiry">"""+esc(d["form_subject"])+"""<select id="type-of-enquiry" name="service" required><option value="">Choose an option</option>"""+options+"""</select></label>
+  <label for="message">Your message<textarea name="message" id="message" rows="5" maxlength="2000" required placeholder="Tell us a little more..."></textarea></label>
+ </div>
+ <button type="submit">Preview the enquiry journey</button>
+ <p class="form-disclaimer">Demonstration only. No information is transmitted or stored.</p>
+ <p class="form-status" role="status" aria-live="polite" hidden></p>
+</form>"""
 
-def services(d,slug):
- main=page_banner(d,"What we do.",d["section_intro"],d["section_kicker"])
- for i,(title,desc,detail) in enumerate(d["services"]):
-  main+=f"""<section class="service-feature {'reverse' if i%2 else ''}"><div class="container feature-grid">
-   <div class="feature-photo"><img src="/assets/photo-{i+1}.jpg" alt="Illustrative {e(title.lower())} service photography" loading="lazy"></div>
-   <div class="feature-copy">{eyebrow(f"Service 0{i+1}")}<h2>{e(title)}</h2><p>{e(desc)}</p>
-    <div class="feature-detail"><span aria-hidden="true">✳</span> {e(detail)}</div>{btn("Ask about this service")}</div></div></section>"""
- return main+cta(d)
+def contact_trade():
+ return banner_trade("START YOUR PROJECT","TELL US<br>YOUR PLANS.","A simple, straightforward route from an idea to the first conversation.")+"""
+ <section class="trade-contact section-space"><div class="frame trade-contact-grid">
+ <div class="trade-contact-intro"><span class="trade-eyebrow orange">REQUEST AN ENQUIRY</span><h2>NO OBLIGATION.<br>NO COMPLICATIONS.</h2><p>Show customers that you're ready to listen. A genuine client site would send this to the business's approved enquiry system.</p><div class="contact-note"><b>DESIGN PREVIEW</b><p>Alder & Stone is fictional. This form demonstrates a customer enquiry and does not send messages.</p></div></div>
+ <div class="trade-form-panel">"""+form_markup("alder")+"""</div></div></section>"""
 
-def about(d,slug):
- return (page_banner(d,"Good work starts here.",d["promise"],"Our approach")+
-  f"""<section class="section about-story"><div class="container story-grid">
-    <div class="story-copy">{eyebrow("A thoughtful approach")}<h2>Simple, human and built around you.</h2><p>{e(d['about'])}</p>
-     <p>On a real customer website, this is where an authentic business story, team photographs and values would go. The layout is ready to make those things feel personal.</p></div>
-    <div class="story-photo"><img src="/assets/photo-4.jpg" alt="Illustrative business lifestyle photograph" loading="lazy"></div>
-   </div></section>"""+steps(d)+cta(d))
+def home_field():
+ return """
+<section class="field-hero"><div class="field-wrap field-hero-grid">
+ <div class="field-hero-copy"><span class="field-index">01 / MADE FOR SMALL BUSINESS</span>
+  <h1>Good books.<br><em>Clear head.</em></h1>
+  <p>Bookkeeping that makes the day-to-day easier to understand. Less time untangling the details. More time moving your business forward.</p>
+  <div class="field-actions">"""+action("Let's have a conversation")+action("Explore our services","/services/","field-link")+"""</div>
+  <div class="field-hero-small">BOOKKEEPING FOR PEOPLE, NOT SPREADSHEETS.</div>
+ </div>
+ <div class="field-board"><div class="field-board-top"><span>YOUR BUSINESS, AT A GLANCE</span><span class="board-code">EXAMPLE VIEW</span></div>
+  <div class="board-content"><span class="board-meta">EVERYTHING IN ITS PLACE</span><h2>Make sense of<br>the month.</h2>
+  <div class="board-visual" aria-hidden="true"><div class="bar bar1"></div><div class="bar bar2"></div><div class="bar bar3"></div><div class="bar bar4"></div><div class="bar bar5"></div><div class="bar bar6"></div></div>
+  <div class="board-list"><div><span>Records</span><strong>Organised</strong></div><div><span>Invoices</span><strong>Under control</strong></div><div><span>Reports</span><strong>Easy to follow</strong></div></div></div>
+ </div>
+</div></section>
+<section class="field-intro"><div class="field-wrap field-intro-grid"><span class="field-index">LESS ADMIN. MORE HEADSPACE.</span><h2>Running a business is enough work already.</h2><p>Keeping your records in order shouldn't take your evenings. We make the numbers easier to work with, in plain English and at your pace.</p></div></section>
+<section class="field-services"><div class="field-wrap"><div class="field-section-head"><span class="field-index">02 / THE PRACTICAL STUFF</span><h2>The support you <em>actually</em> need.</h2></div>
+ <div class="field-lines"><a href="/services/"><span>01</span><strong>Day-to-day bookkeeping</strong><p>Transactions, records and the pieces that keep business running.</p></a>
+ <a href="/services/"><span>02</span><strong>Invoices and expenses</strong><p>Smaller headaches and better processes for everyday admin.</p></a>
+ <a href="/services/"><span>03</span><strong>Useful reporting</strong><p>Clarity on where things stand and what deserves attention.</p></a></div>
+ <div class="field-services-link">"""+action("Learn about the services","/services/","field-link")+"</div></div></section>"+"""
+<section class="field-feature"><div class="field-wrap field-feature-grid">
+ <div class="field-feature-image">"""+pic("photo-1.jpg","Small business owners working collaboratively in an office")+"""</div>
+ <div class="field-feature-copy"><span class="field-index">03 / GOOD COMPANY</span><h2>Questions are<br>always welcome.</h2><p>We're people first and bookkeepers second. Clear answers, a bit of patience and a practical approach can make a world of difference.</p>"""+action("Meet Fieldnote","/about/","field-link")+"""</div>
+</div></section>"""+field_cta()
 
-def contact(d,slug):
- opts=''.join(f'<option value="{e(x)}">{e(x)}</option>' for x in d["form_options"])
- qas=''.join(f'<details><summary>{e(q)} <span aria-hidden="true">+</span></summary><p>{e(a)}</p></details>' for q,a in d['faq'])
- return (page_banner(d,"Come say hello.",d["cta_body"],"Get in touch")+
-  f"""<section class="section contact-section"><div class="container contact-grid">
-   <div class="contact-left">{eyebrow("A friendly conversation")}<h2>Tell us what you have in mind.</h2>
-    <p>This is a sample enquiry page showing how prospective customers can get in touch quickly and easily.</p>
-    <div class="sample-disclaimer"><strong>Design preview only</strong><span>This is a fictional business. The form is not connected to email or a CRM, and no details are sent or stored.</span></div>
-    <div class="contact-small"><span class="small-symbol" aria-hidden="true">✳</span><span>To get a real website like this, visit <a href="https://digipixel.uk/" target="_blank" rel="noopener">DigiPixel ↗</a></span></div>
-   </div>
-   <form data-demo-form class="contact-form" novalidate><p class="form-title">What can we help with?</p>
-    <div class="form-row"><label>Your name <input type="text" name="name" autocomplete="name" placeholder="e.g. Alex Taylor" required maxlength="100"></label>
-    <label>Email address <input type="email" name="email" autocomplete="email" placeholder="alex@example.com" required maxlength="254"></label></div>
-    <label>{e(d["form_subject"])} <select name="service" required><option value="">Please select</option>{opts}</select></label>
-    <label>A little about your enquiry <textarea name="message" placeholder="Tell us a little about what you're looking for…" required maxlength="2000" rows="5"></textarea></label>
-    <button class="button button-primary submit" type="submit">See how an enquiry works <span aria-hidden="true">↗</span></button>
-    <p class="form-help">Preview interaction only. Nothing is submitted.</p><p class="form-status" role="status" aria-live="polite" hidden></p>
-   </form>
-  </div></section>"""+
-  f"""<section class="section faq-section"><div class="container"><div class="faq-left">{eyebrow("Good to know")}<h2>A few quick answers.</h2></div><div class="faq-items">{qas}</div></div></section>""")
+def field_cta():
+ return """<section class="field-cta"><div class="field-wrap field-cta-grid"><span>LET'S MAKE IT SIMPLER.</span><div><h2>More time for the good stuff.</h2><p>Tell us about your business, and we'll start with a conversation.</p></div>"""+action("Start here")+"</div></section>"
 
-def favicon(slug):
- colors={"alder":("#273f31","#ede3c7"),"fieldnote":("#1c4a49","#e1eecf"),"sunday":("#573647","#ffcbb4")}
- a,b=colors[slug]
- letter={"alder":"a","fieldnote":"f","sunday":"s"}[slug]
- return f'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="{a}"/><text x="32" y="45" font-family="Georgia,serif" font-size="49" text-anchor="middle" fill="{b}">{letter}</text></svg>'
+def field_title(index,title,caption):
+ return '<section class="field-page-intro"><div class="field-wrap"><span class="field-index">'+index+'</span><h1>'+title+'</h1><p>'+esc(caption)+'</p></div></section>'
 
-def build():
- style=(ROOT/"shared"/"site.css").read_text()
- script=(ROOT/"shared"/"site.js").read_text()
- for slug,d in DATA.items():
-  path=OUT/slug
-  (path/"assets").mkdir(parents=True,exist_ok=True)
-  (path/"assets"/"site.css").write_text(style)
-  (path/"assets"/"site.js").write_text(script)
-  (path/"favicon.svg").write_text(favicon(slug))
-  (path/"robots.txt").write_text("User-agent: *\nDisallow: /\n")
-  for i,photo in enumerate([d["hero"]]+d["images"]): photo_download(slug,i,photo)
-  for page,content in [("home",home(d,slug)),("services",services(d,slug)),("about",about(d,slug)),("contact",contact(d,slug))]:
-   target=path if page=="home" else path/page
-   target.mkdir(exist_ok=True,parents=True)
-   (target/"index.html").write_text(shell(d,slug,page,content))
-  (path/"404.html").write_text(shell(d,slug,"home",f'<div class="container notfound"><p>404 · Page not found</p><h1>This page took a different path.</h1>{btn("Back to home","/")}</div>'))
-  print("BUILT:",slug, "5 HTML pages", "images:",len(list((path/"assets").glob("*.jpg"))))
- (OUT/"index.html").write_text('<!doctype html><html lang="en"><head><meta name="robots" content="noindex"></head><body><h1>DigiPixel design concepts</h1><ul><li><a href="/alder/">Alder & Stone</a></li><li><a href="/fieldnote/">Fieldnote</a></li><li><a href="/sunday/">Sunday & Sage</a></li></ul></body></html>')
- (ROOT/"manifest.json").write_text(json.dumps({"brand":"DigiPixel","type":"fictional budget WordPress-ready demo design concepts","sites":{k:{"name":v["name"],"sector":v["sector"]} for k,v in DATA.items()}},indent=2))
-if __name__=="__main__":build()
+def services_field():
+ d=DATA["fieldnote"]
+ items=""
+ for idx,(t,desc,detail) in enumerate(d["services"],1):
+  items+='<article class="field-service-entry"><span class="field-entry-index">'+str(idx).zfill(2)+'</span><div><h2>'+esc(t)+'</h2><p>'+esc(desc)+'</p><small>'+esc(detail)+'</small></div></article>'
+ return field_title("HOW WE CAN HELP","Everything in<br><em>good order.</em>","Friendly, structured bookkeeping for small businesses.")+"""
+ <section class="field-service-page"><div class="field-wrap field-service-grid"><div class="field-service-side"><span class="field-index">A SIMPLER WAY TO WORK</span><p>Careful records, useful information and a dependable point of contact. No unnecessary complications.</p>"""+pic("photo-4.jpg","Notes and paperwork used for business planning")+"""</div><div class="field-service-entries">"""+items+"""</div></div></section>"""+field_cta()
+
+def about_field():
+ return field_title("THE APPROACH","A calmer way<br><em>to work.</em>","Helpful, considered support that makes business feel manageable.")+"""
+ <section class="field-about"><div class="field-wrap field-about-grid">
+ <div><span class="field-index">WHY WE DO IT</span><h2>Being organised shouldn't feel complicated.</h2><p>Fieldnote is a fictitious practice created as a demonstration of how a small independent accountant or bookkeeper could introduce themselves online.</p><p>On a real business website this area would feature the team's authentic background, qualifications and approach. No testimonials or figures are invented here.</p></div>
+ <div class="field-about-visual">"""+pic("photo-2.jpg","Open-plan workspace with light interiors")+"""<span>GOOD WORK STARTS WITH CLEAR THINKING.</span></div></div></section>
+ <section class="field-values"><div class="field-wrap"><h2>Plain English is a good place to start.</h2><div class="field-values-grid">
+  <div><b>01</b><h3>Less jargon</h3><p>Explanations that make sense without a glossary.</p></div>
+  <div><b>02</b><h3>More confidence</h3><p>Understand what's happening, instead of guessing.</p></div>
+  <div><b>03</b><h3>Better headspace</h3><p>Make room for the work that brought you here.</p></div></div></div></section>"""+field_cta()
+
+def contact_field():
+ return field_title("SAY HELLO","Let's make<br><em>this easier.</em>","It all starts with a simple conversation.")+"""
+<section class="field-contact"><div class="field-wrap field-contact-grid"><div class="field-contact-aside"><span class="field-index">A FRESH START</span><h2>A note from<br>you is enough.</h2><p>In a real website, an enquiry would go directly to the business. This example has no receiving mailbox and stores no information.</p><div class="field-callout"><strong>THIS IS A DESIGN DEMONSTRATION</strong><span>Fieldnote isn't a real bookkeeping provider.</span></div></div>
+<div class="field-form-panel">"""+form_markup("fieldnote")+"""</div></div></section>"""
+
+def home_salon():
+ return """
+<section class="salon-hero"><div class="salon-wrap salon-hero-grid">
+ <div class="salon-hero-copy"><span class="salon-label">GOOD HAIR, YOUR WAY</span><h1>Your hair.<br><em>Your kind</em><br>of day.</h1><p>Great cuts, lovely colour and a little time to yourself. Welcome to your new happy place.</p>"""+action("SEE THE MENU","/services/","salon-pill")+"""</div>
+ <div class="salon-hero-images">
+  <div class="salon-portrait">"""+pic("photo-3.jpg","Beauty editorial portrait with styled hair", 'fetchpriority="high"')+"""</div>
+  <div class="salon-image-slab">"""+pic("photo-1.jpg","Bright modern hair studio")+"""</div>
+  <div class="salon-image-caption">THE PERFECT KIND OF RESET</div>
+ </div></div>
+ <div class="salon-hero-caption"><div class="salon-wrap">INDEPENDENT HAIR STUDIO <span>TAKE SOME TIME FOR YOURSELF</span></div></div>
+</section>
+<section class="salon-services"><div class="salon-wrap">
+ <div class="salon-section-header"><span class="salon-label">THE LITTLE LUXURIES</span><h2>Come for the hair.<br><em>Stay for the feeling.</em></h2></div>
+ <div class="salon-menu">
+  <a href="/services/"><span class="salon-menu-no">01</span><strong>CUT & FINISH</strong><span>Find your shape</span><b>EXPLORE</b></a>
+  <a href="/services/"><span class="salon-menu-no">02</span><strong>COLOUR & CARE</strong><span>Something fresh</span><b>EXPLORE</b></a>
+  <a href="/services/"><span class="salon-menu-no">03</span><strong>THE FINISHING TOUCH</strong><span>A little extra</span><b>EXPLORE</b></a>
+ </div></div></section>
+<section class="salon-interlude"><div class="salon-wrap salon-interlude-grid">
+ <div class="salon-image-large">"""+pic("photo-2.jpg","Hair stylist working with a client")+"""</div>
+ <div class="salon-interlude-copy"><span class="salon-label">SOMETHING ABOUT US</span><h2>Come as<br>you <em>are.</em></h2><p>A hair appointment should feel like your time. No rush, no pressure. Just good hair and good company.</p>"""+action("OUR WORLD","/about/","salon-pill light")+"</div></div></section>"+"""
+<section class="salon-gallery"><div class="salon-wrap"><span class="salon-label">IN THE STUDIO</span><h2>A look around.</h2><div class="salon-gallery-grid"><div>"""+pic("hero.jpg","Bright hair salon with styling stations")+"""</div><div>"""+pic("photo-4.jpg","Modern professional hair salon interior")+"""</div></div><p>Example imagery selected to illustrate the design. Sunday & Sage is not a real operating salon.</p></div></section>"""+salon_cta()
+
+def salon_cta():
+ return """<section class="salon-cta"><div class="salon-wrap salon-cta-grid"><div><span class="salon-label">YOUR NEXT GOOD HAIR DAY</span><h2>Make a little<br><em>space for you.</em></h2></div>"""+action("SAY HELLO","/contact/","salon-pill")+"</div></section>"
+
+def salon_title(kicker, h, p):
+ return '<section class="salon-page-intro"><div class="salon-wrap"><span class="salon-label">'+kicker+'</span><h1>'+h+'</h1><p>'+esc(p)+'</p></div></section>'
+
+def services_salon():
+ d=DATA["sunday"]
+ x=salon_title("THE TREATMENT MENU","The good <em>stuff.</em>","A few moments worth making time for.")
+ for idx,(t,desc,detail) in enumerate(d["services"],1):
+  file="photo-"+str(idx)+".jpg"
+  x+='<section class="salon-service-item"><div class="salon-wrap salon-service-grid"><div class="salon-service-photo">'+pic(file,"Illustrative salon service: "+t)+'</div><div class="salon-service-copy"><span class="salon-label">TREATMENT 0'+str(idx)+'</span><h2>'+esc(t)+'</h2><p>'+esc(desc)+'</p><small>'+esc(detail)+'</small>'+action("ASK ABOUT THIS","/contact/","salon-pill")+'</div></div></section>'
+ return x+salon_cta()
+
+def about_salon():
+ return salon_title("OUR WORLD","Nice to <em>meet you.</em>","Your time, your style, your kind of place.")+"""
+<section class="salon-about"><div class="salon-wrap salon-about-grid"><div class="salon-about-main">"""+pic("photo-1.jpg","Bright salon styling chairs")+"""</div>
+<div class="salon-about-copy"><span class="salon-label">A LITTLE ABOUT US</span><h2>Good hair is<br>personal.</h2><p>We love the small things: a good chat, a thoughtful consultation and that feeling when you walk out with a little more confidence.</p><p>Sunday & Sage is a fictitious studio. This demonstration shows how a small salon might tell its story, rather than claiming real stylists or customer reviews.</p>"""+action("EXPLORE THE MENU","/services/","salon-pill light")+"</div></div></section>"+salon_cta()
+
+def contact_salon():
+ return salon_title("LET'S TALK HAIR","Hello, <em>lovely.</em>","Tell us what you have in mind.")+"""
+<section class="salon-contact"><div class="salon-wrap salon-contact-grid"><div class="salon-contact-picture">"""+pic("photo-3.jpg","Editorial portrait with styled hair")+"""<p>GOOD HAIR, GOOD COMPANY.</p></div>
+<div class="salon-contact-form"><span class="salon-label">GET IN TOUCH</span><h2>Your next good hair day starts here.</h2><p>This is a fictional salon website. The following form demonstrates a contact journey and doesn't send or store any information.</p>"""+form_markup("sunday")+"""</div></div></section>"""
+
+HOMES={"alder":home_trade,"fieldnote":home_field,"sunday":home_salon}
+SERVICES={"alder":services_trade,"fieldnote":services_field,"sunday":services_salon}
+ABOUT={"alder":about_trade,"fieldnote":about_field,"sunday":about_salon}
+CONTACT={"alder":contact_trade,"fieldnote":contact_field,"sunday":contact_salon}
+
+def build_all():
+ for slug in DATA:
+  dst=PUBLIC/slug
+  assets=dst/"assets"
+  assets.mkdir(parents=True,exist_ok=True)
+  for i,photo in enumerate([DATA[slug]["hero"]]+DATA[slug]["images"]):
+   photo_download(slug,i,photo)
+  shutil.copyfile(ROOT/"styles"/(slug+".css"),assets/"site.css")
+  shutil.copyfile(ROOT/"shared"/"site.js",assets/"site.js")
+  body={page:builder() for page,builder in [
+   ("home",HOMES[slug]),("services",SERVICES[slug]),("about",ABOUT[slug]),("contact",CONTACT[slug])]}
+  for page in PAGES:
+   dest=dst if page=="home" else dst/page
+   dest.mkdir(parents=True,exist_ok=True)
+   (dest/"index.html").write_text(document(slug,page,body[page]))
+  if slug=="alder": notfound=banner_trade("NOT FOUND","WRONG<br>TURN.","That page isn't available.")+trade_cta()
+  elif slug=="fieldnote": notfound=field_title("NOT FOUND","A little off<br><em>track.</em>","That page doesn't exist.")+field_cta()
+  else: notfound=salon_title("NOT FOUND","Wrong <em>turn.</em>","Let's find your way back.")+salon_cta()
+  (dst/"404.html").write_text(document(slug,"home",notfound).replace("<title>"+esc(DATA[slug]["name"]+" | "+DATA[slug]["strap"])+"</title>","<title>Page not found | "+esc(DATA[slug]["name"])+"</title>"))
+  (dst/"robots.txt").write_text("User-agent: *\nDisallow: /\n")
+  print("Built",slug,"with independently structured layouts and",len(body),"pages")
+ # Keep a simple local index, with no false claims about brands.
+ (PUBLIC/"index.html").write_text('<!doctype html><html lang="en"><head><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DigiPixel design previews</title></head><body><main><h1>DigiPixel budget design previews</h1><ul><li><a href="/alder/">Alder & Stone</a></li><li><a href="/fieldnote/">Fieldnote</a></li><li><a href="/sunday/">Sunday & Sage</a></li></ul></main></body></html>')
+
+if __name__=="__main__":
+ build_all()

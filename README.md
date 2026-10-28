@@ -4,11 +4,11 @@ Three original demonstration websites for the affordable DigiPixel fixed-scope w
 
 ## Sites
 
-- Alder & Stone: home renovation / trades. Warm editorial palette, clear service range and quote journey.
-- Fieldnote: bookkeeping / professional service. Accessible, calm layout, straightforward explanation of services and lead journey.
-- Sunday & Sage: salon / lifestyle. Image-led personality, appointment-led structure and service menu.
+- Alder & Stone: industrial home renovations website. Dark photographic split hero, oversized condensed block typography, bright orange accents, bold service rows and prominent quotation journey.
+- Fieldnote: editorial professional-services website. Quiet Swiss-influenced layout, large serif typography, mock graphical dashboard rather than a photographic hero, information-first service listing and unobtrusive enquiries.
+- Sunday & Sage: expressive salon editorial. Lavender and coral, mixed type, layered fashion photography, asymmetrical composition, treatment-list presentation and an entirely separate page architecture.
 
-Each website has four responsive pages: Home, Services, Our approach, Contact, plus a designed 404 page. Mobile menus, semantic navigation, focus states, reduced-motion support, sample form validation and an explicit confirmation that no enquiry is sent are included. All assets are locally hosted. No analytics, cookies, customer data capture or live integrations are enabled. The website is marked as a demonstration, with noindex metadata, robots.txt and server headers.
+These are three separate CSS and layout systems, not three colour variants of a common template. The only shared JavaScript is accessible mobile-navigation and deliberately non-transmitting demonstration form behaviour. Each website has four responsive pages: Home, Services, Our approach, Contact, plus a designed 404 page. Mobile menus, semantic navigation, focus states, reduced-motion support, sample form validation and an explicit confirmation that no enquiry is sent are included. All assets are locally hosted. No decorative emoji or star/asterisk glyphs appear on the finished pages. No analytics, cookies, customer data capture or live integrations are enabled. The website is marked as a demonstration, with noindex metadata, robots.txt and server headers.
 
 ## Build / run on Mac
 
@@ -57,3 +57,7 @@ Live gallery: https://digipixel-uk.github.io/project-digipixel-starter-previews/
 GitHub Pages is configured to publish the main branch's /docs folder. Rebuild it with python3 scripts/export-pages.py after changing design content, commit and push. The hosted gallery, all demo pages, assets, mobile menus and non-sending forms have been verified through HTTPS and a headless mobile Chromium test.
 
 GitHub Pages is an interim, non-production review host only. The normal controlled preview.digipixel.uk environment was not changed because the known SSH host identity of its apparent wildcard target differed from the stored identity. Resolve that out-of-band against the infrastructure provider before provisioning there; do not disable SSH host key checking.
+
+## Design source and thumbnails
+
+Build with `python3 build.py`. The fictional businesses and illustrative photo identifiers live in `content_reference.py`; the independently designed templates live in `build.py` and `styles/{alder,fieldnote,sunday}.css`. Screenshot thumbnails used by the public showcase live in each site's `assets/preview.jpg` and should be regenerated from headless desktop screenshots after substantive visual changes. `tests/smoke.cjs` verifies desktop/mobile layouts, navigation and form behaviour.

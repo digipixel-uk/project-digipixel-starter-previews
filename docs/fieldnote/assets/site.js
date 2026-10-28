@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const trigger = document.querySelector('.menu-toggle');
-  const nav = document.querySelector('#site-navigation');
+  const nav = document.querySelector('#main-navigation');
   if (trigger && nav) {
     const closeMenu = () => { nav.classList.remove('open'); trigger.setAttribute('aria-expanded','false'); };
     trigger.addEventListener('click', () => {
