@@ -8,6 +8,8 @@ from pathlib import Path
 from html import escape as esc
 from content_reference import DATA, photo_download
 import shutil
+import subprocess
+import sys
 
 ROOT=Path(__file__).resolve().parent
 PUBLIC=ROOT/"public"
@@ -288,8 +290,13 @@ def build_all():
   (dst/"404.html").write_text(document(slug,"home",notfound).replace("<title>"+esc(DATA[slug]["name"]+" | "+DATA[slug]["strap"])+"</title>","<title>Page not found | "+esc(DATA[slug]["name"])+"</title>"))
   (dst/"robots.txt").write_text("User-agent: *\nDisallow: /\n")
   print("Built",slug,"with independently structured layouts and",len(body),"pages")
- # Keep a simple local index, with no false claims about brands.
- (PUBLIC/"index.html").write_text('<!doctype html><html lang="en"><head><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DigiPixel design previews</title></head><body><main><h1>DigiPixel budget design previews</h1><ul><li><a href="/alder/">Alder & Stone</a></li><li><a href="/fieldnote/">Fieldnote</a></li><li><a href="/sunday/">Sunday & Sage</a></li></ul></main></body></html>')
+ # Generate the same selector for the local demonstration hub.
+ selector=ROOT.parent/"digipixel-preview-selector"/"render.py"
+ subprocess.run([
+  sys.executable,str(selector),
+  "--config",str(ROOT/"preview-selector.json"),
+  "--output",str(PUBLIC/"index.html")
+ ],check=True)
 
 if __name__=="__main__":
  build_all()

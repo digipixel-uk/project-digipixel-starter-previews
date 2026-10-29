@@ -1,0 +1,30 @@
+{
+  "project": "DigiPixel website concepts",
+  "category": "DigiPixel design collection",
+  "title": "Three businesses. Three different website directions",
+  "summary": "A showcase of distinctive small business websites. Explore each full preview to see how the layout, navigation and content change to suit a very different kind of business.",
+  "notice": "These are fictional businesses created as examples of what DigiPixel can design. They are not customer case studies. Demo enquiry forms do not transmit information.",
+  "concepts": [
+    {
+      "name": "Alder & Stone",
+      "tag": "Trades and home improvements",
+      "description": "Industrial, high contrast and built around making it easy to request a quote.",
+      "image": "./alder/assets/preview.jpg",
+      "url": "./alder/"
+    },
+    {
+      "name": "Fieldnote",
+      "tag": "Professional services",
+      "description": "Quiet, editorial and information first, with an approachable service journey.",
+      "image": "./fieldnote/assets/preview.jpg",
+      "url": "./fieldnote/"
+    },
+    {
+      "name": "Sunday & Sage",
+      "tag": "Salon and beauty",
+      "description": "Expressive, asymmetrical and photography led, with a completely different personality.",
+      "image": "./sunday/assets/preview.jpg",
+      "url": "./sunday/"
+    }
+  ]
+}

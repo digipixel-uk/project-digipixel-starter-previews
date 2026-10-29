@@ -61,3 +61,7 @@ GitHub Pages is an interim, non-production review host only. The normal controll
 ## Design source and thumbnails
 
 Build with `python3 build.py`. The fictional businesses and illustrative photo identifiers live in `content_reference.py`; the independently designed templates live in `build.py` and `styles/{alder,fieldnote,sunday}.css`. Screenshot thumbnails used by the public showcase live in each site's `assets/preview.jpg` and should be regenerated from headless desktop screenshots after substantive visual changes. `tests/smoke.cjs` verifies desktop/mobile layouts, navigation and form behaviour.
+
+## Consistent preview selector (29 October 2026)
+
+The hosted gallery root and local public index now use the shared DigiPixel-branded selector. The design system is maintained in the sibling digipixel-preview-selector project. The contents and links in preview-selector.json are project-specific. Rebuilding with python3 build.py or exporting with python3 scripts/export-pages.py regenerates the selector automatically. Individual concept sites remain deliberately unrelated in their visual design.
